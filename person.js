@@ -23,6 +23,23 @@ router
     .get('/psotkk', (req, res) => {
         return res.status(201).send({ data: people })
     })
+    .get('/api/person', async (req, res) => {
+        try {
+            const people = await Person.find();
+            return res.status(200).send({ data: people });
+        } catch (error) {
+            return res.status(500).send({ error: error });
+        }
+    })
+    .get('/api/person/:id', async (req, res) => {
+        const { id } = req.params;
+        try {
+            const person = await Person.findById(id);
+            return res.status(200).json(person);
+        } catch (error) {
+            res.status(500).json({ error: error })
+        }
+    })
     .post('/psotkk', async (req, res) => {
         const { name, oname, int } = req.body;
 
@@ -45,14 +62,35 @@ router
         }
 
     })
-    .get('/api/person', async (req, res) => {
+    .patch('/api/person/:id', async (req, res) => {
+        const { id } = req.params;
+        if (!id)
+            return res.status(400).send({ message: "No id provider" })
+
+        const person = req.body;
+
+        if (!person.salary)
+            return res.status(400).send({ message: "No salary provider" })
         try {
-            const people = await Person.find();
-            return res.status(200).send({ data: people });
+            const newPerson = await Person.findByIdAndUpdate(
+                id,
+                { salary: person.salary }
+            );
+            return res.status(201).send(newPerson);
         } catch (error) {
             return res.status(500).send({ error: error });
         }
     })
+    .delete('/api/person/:id', async (req, res) => {
+        const { id } = req.params;
+        if (!id)
+            return res.status(400).send({ message: "No id provider" });
 
-
+        try {
+            await Person.findByIdAndRemove(id);
+            return res.status(200).send({ message: "Person deleted successfully" })
+        } catch (error) {
+            return res.status(500).send({ message: "Something failled" })
+        }
+    })
 module.exports = router
