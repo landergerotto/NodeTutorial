@@ -1,37 +1,18 @@
-const express = require('express');
-const Person = require('./model/person');
-const router = express.Router();
+const Person = require('../model/person');
 
-const people = []
+class PersonController {
 
-router
-    .get('/api/person/first', (req, res) => {
-        console.log("Hello in console");
-        return
-    })
-    .get('/params/:numero?', (req, res) => {
-        // numero as variable
-        const { numero } = req.params;
-        res.send(`Número Recebido: ${numero}`)
-    })
-    .get('/query?', (req, res) => {
-        //query?numero=1&numero2=3
-        const { numero } = req.query;
-        const { numero2 } = req.query;
-        res.send(`Número Recebido: ${numero} e ${numero2}`)
-    })
-    .get('/psotkk', (req, res) => {
-        return res.status(201).send({ data: people })
-    })
-    .get('/api/person', async (req, res) => {
+    static async getAllUser(req, res) {
         try {
             const people = await Person.find();
             return res.status(200).send({ data: people });
         } catch (error) {
             return res.status(500).send({ error: error });
         }
-    })
-    .get('/api/person/:id', async (req, res) => {
+
+    }
+
+    static async getUserById(req, res) {
         const { id } = req.params;
         try {
             const person = await Person.findById(id);
@@ -39,8 +20,9 @@ router
         } catch (error) {
             res.status(500).json({ error: error })
         }
-    })
-    .post('/psotkk', async (req, res) => {
+    }
+
+    static async create(req, res) {
         const { name, oname, int } = req.body;
 
         if (!name || !oname || !int)
@@ -60,37 +42,40 @@ router
         } catch (error) {
             return res.status(500).send({ error: error })
         }
+    }
 
-    })
-    .patch('/api/person/:id', async (req, res) => {
+    static async update(req, res) {
         const { id } = req.params;
         if (!id)
             return res.status(400).send({ message: "No id provider" })
 
         const person = req.body;
-
-        if (!person.salary)
+        if (!person.int)
             return res.status(400).send({ message: "No salary provider" })
         try {
             const newPerson = await Person.findByIdAndUpdate(
                 id,
-                { salary: person.salary }
+                { salary: person.int }
             );
             return res.status(201).send(newPerson);
         } catch (error) {
             return res.status(500).send({ error: error });
         }
-    })
-    .delete('/api/person/:id', async (req, res) => {
+    }
+
+    static async delete(req, res) {
         const { id } = req.params;
         if (!id)
             return res.status(400).send({ message: "No id provider" });
 
         try {
-            await Person.findByIdAndRemove(id);
+            await Person.findByIdAndDelete(id);
             return res.status(200).send({ message: "Person deleted successfully" })
         } catch (error) {
             return res.status(500).send({ message: "Something failled" })
         }
-    })
-module.exports = router
+    }
+
+}
+
+module.exports = PersonController
